@@ -115,11 +115,10 @@ function IsPoison(x, y){
     return false;
 }
 
-function JudgeConflict(){
-    for(let i = 0; i < snakelist.length; i++){
-        if(x_point == snakelist[i].x && y_point == snakelist[i].y){
-            return true;
-        }
+function JudgePoint(){
+    // 先頭で判定
+    if(x_point == snakelist[0].x && y_point == snakelist[0].y){
+        return true;
     }
     return false;
 }
@@ -195,7 +194,7 @@ function ShowPoisonRect(){
 
 function JudgePoison(){
     for(let i =0; i < poisonlist.length; i++){
-        if(IsSnake(poisonlist[i].x, poisonlist[i].y)){
+        if(snakelist[0].x == poisonlist[i].x && snakelist[0].y == poisonlist[i].y){
             return true;
         } 
     }    
@@ -203,19 +202,17 @@ function JudgePoison(){
 }
 
 function JudgeOutCanvas(){
-    for(let j = 0; j < snakelist.length; j++){
-        if(snakelist[j].x < 0){
-            return true;
-        }
-        if(snakelist[j].y < 0){
-            return true;
-        }
-        if(can.width/RECT_SIZE-1 < snakelist[j].x){
-            return true;
-        }
-        if(can.height/RECT_SIZE-1 < snakelist[j].y){
-            return true;
-        }
+    if(snakelist[0].x < 0){
+        return true;
+    }
+    if(snakelist[0].y < 0){
+        return true;
+    }
+    if(can.width/RECT_SIZE-1 < snakelist[0].x){
+        return true;
+    }
+    if(can.height/RECT_SIZE-1 < snakelist[0].y){
+        return true;
     }
     return false;        
 }
@@ -227,16 +224,17 @@ function animation(){
 
     UpdatePos();
     ShowListRect();
-    if(JudgeConflict()){
+    if(JudgePoint()){
         AddRect();
         RndRect();
         RndPoisonRect(5);
     }
-    if(JudgePoison() || JudgeOutCanvas()){
+    else if(JudgePoison() || JudgeOutCanvas()){
         ctx.fillStyle = "blue";
         ctx.fillRect(0,0,can.width,can.height);
         clearInterval(intervalId);
         intervalId = null;
+        ShowListRect();
     }
     ShowRect(x_point,y_point, "white");
     ShowPoisonRect();
