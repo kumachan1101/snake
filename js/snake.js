@@ -9,6 +9,27 @@ var direction = "ArrowRight";
 var RECT_SIZE = 32;
 
 
+const btn_up = document.getElementById("up");
+btn_up.onclick  = function(){
+    direction = "ArrowUp";
+};
+
+const btn_down = document.getElementById("down");
+btn_down.onclick  = function(){
+    direction = "ArrowDown";
+};
+
+const btn_left = document.getElementById("left");
+btn_left.onclick  = function(){
+    direction = "ArrowLeft";
+};
+
+const btn_right = document.getElementById("right");
+btn_right.onclick  = function(){
+    direction = "ArrowRight";
+};
+
+
 class Pos{
     constructor(x,y){
         this.x = x;
@@ -70,8 +91,10 @@ function RndRect(){
 }
 
 function JudgeConflict(){
-    if(x2 == x && y2 == y){
-        return true;
+    for(let i = 0; i < snakelist.length; i++){
+        if(x2 == snakelist[i].x && y2 == snakelist[i].y){
+            return true;
+        }
     }
     return false;
 }
@@ -127,17 +150,43 @@ function ShowPoisonRect(){
 }
 
 function JudgePoison(){
-    for(i =0; i < poisonlist.length; i++){
-        if(poisonlist[i].x == x && poisonlist[i].y == y){
-            return true;
+    for(let i =0; i < poisonlist.length; i++){
+        for(let j = 0; j < snakelist.length; j++){
+            if(poisonlist[i].x == snakelist[j].x && poisonlist[i].y == snakelist[j].y){
+                return true;
+            }
         }
     }    
     return false;
+}
 
+function JudgeOutCanvas(){
+    for(let j = 0; j < snakelist.length; j++){
+        if(snakelist[j].x < 0){
+            return true;
+        
+        }
+        if(snakelist[j].y < 0){
+            return true;
+        
+        }
+        if(can.width/RECT_SIZE < snakelist[j].x){
+            return true;
+        
+        }
+        if(can.height/RECT_SIZE < snakelist[j].y){
+            return true;
+        
+        }
+    }
+    return false;        
 }
 
 function animation(){
-    ctx.clearRect(0,0,can.width,can.height);
+    //ctx.clearRect(0,0,can.width,can.height);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,can.width,can.height);
+
     UpdatePos();
     ShowListRect();
     if(JudgeConflict()){
@@ -145,7 +194,7 @@ function animation(){
         RndRect();
         RndPoisonRect(5);
     }
-    if(JudgePoison()){
+    if(JudgePoison() || JudgeOutCanvas()){
         ctx.fillStyle = "blue";
         ctx.fillRect(0,0,can.width,can.height);
         clearInterval(intervalId);
