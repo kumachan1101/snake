@@ -1,7 +1,7 @@
 var can = document.getElementById("can");
 var ctx = can.getContext("2d");
-let x2;
-let y2;
+let x_point;
+let y_point;
 
 let snakelist = [];
 let poisonlist = [];
@@ -38,10 +38,23 @@ class Pos{
 }
 
 function keydownEvent(event){ 
-    direction = event.key;
+    
+    switch(event.key){
+        case "ArrowLeft":
+        case "ArrowRight":
+        case "ArrowUp":
+        case "ArrowDown":
+            direction = event.key;
+            break;
+        default:
+            break;
+    }
 }
 
 function init(){
+    can.width = RECT_SIZE *20;
+    can.height = RECT_SIZE *20;
+
     document.addEventListener('keydown', keydownEvent,false);
     RndRect();
     snakelist.push(new Pos(0, 0));   
@@ -75,8 +88,6 @@ function UpdatePos(){
     }
     snakelist[0].x = x;
     snakelist[0].y = y;    
- 
-    
 }
 
 function ShowListRect(){
@@ -86,13 +97,27 @@ function ShowListRect(){
 }
 
 function RndRect(){
-    x2 = Math.floor( Math.random() * 40 );
-    y2 = Math.floor( Math.random() * 20 ); 
+    while(true){
+        x_point = Math.floor( Math.random() * (can.width / RECT_SIZE) );
+        y_point = Math.floor( Math.random() * (can.height / RECT_SIZE) ); 
+        if(false == IsPoison(x_point, y_point) && false == IsSnake(x_point, y_point)){
+            break;
+        }
+    }
+}
+
+function IsPoison(x, y){
+    for(i =0; i < poisonlist.length; i++){
+        if(poisonlist[i].x == x && poisonlist[i].y == y){
+            return true;
+        }
+    }
+    return false;
 }
 
 function JudgeConflict(){
     for(let i = 0; i < snakelist.length; i++){
-        if(x2 == snakelist[i].x && y2 == snakelist[i].y){
+        if(x_point == snakelist[i].x && y_point == snakelist[i].y){
             return true;
         }
     }
@@ -117,17 +142,22 @@ function GetAddPos(cLastPos){
             y -= 1;    
             break;
         default:
-            break;
+            return null;
     }
     let cAddPos = new Pos(x,y);
     return cAddPos;
 }
 
 function AddRect(){
-    let len = snakelist.length;
-    let cLastPos = snakelist[len-1];
-    let cAddPos = this.GetAddPos(cLastPos);
-    snakelist.push(cAddPos);   
+    while(true){
+        let len = snakelist.length;
+        let cLastPos = snakelist[len-1];
+        let cAddPos = this.GetAddPos(cLastPos);
+        if(null != cAddPos){
+            snakelist.push(cAddPos);
+            break;
+        }
+    }
 }
 
 function ShowRect(x,y,color){
@@ -136,11 +166,25 @@ function ShowRect(x,y,color){
 }
 
 function RndPoisonRect(){
-    for(i =0; i <5; i++){
-        let x = Math.floor( Math.random() * 40 );
-        let y = Math.floor( Math.random() * 20 );
-        poisonlist.push(new Pos(x,y));    
+    let cnt = 5;
+
+    while(cnt > 0){
+        let x = Math.floor( Math.random() *  (can.width / RECT_SIZE) );
+        let y = Math.floor( Math.random() *  (can.height / RECT_SIZE) );
+        if(x != x_point && y != y_point && !IsSnake(x ,y)){
+            poisonlist.push(new Pos(x,y)); 
+        }
+        cnt--;
     }
+}
+
+function IsSnake(x,y){
+    for (let index = 0; index < snakelist.length; index++) {
+        if(x == snakelist[index].x && y == snakelist[index].y){
+            return true;
+        }
+    }
+    return false;
 }
 
 function ShowPoisonRect(){
@@ -151,11 +195,9 @@ function ShowPoisonRect(){
 
 function JudgePoison(){
     for(let i =0; i < poisonlist.length; i++){
-        for(let j = 0; j < snakelist.length; j++){
-            if(poisonlist[i].x == snakelist[j].x && poisonlist[i].y == snakelist[j].y){
-                return true;
-            }
-        }
+        if(IsSnake(poisonlist[i].x, poisonlist[i].y)){
+            return true;
+        } 
     }    
     return false;
 }
@@ -164,19 +206,15 @@ function JudgeOutCanvas(){
     for(let j = 0; j < snakelist.length; j++){
         if(snakelist[j].x < 0){
             return true;
-        
         }
         if(snakelist[j].y < 0){
             return true;
-        
         }
-        if(can.width/RECT_SIZE < snakelist[j].x){
+        if(can.width/RECT_SIZE-1 < snakelist[j].x){
             return true;
-        
         }
-        if(can.height/RECT_SIZE < snakelist[j].y){
+        if(can.height/RECT_SIZE-1 < snakelist[j].y){
             return true;
-        
         }
     }
     return false;        
@@ -200,7 +238,7 @@ function animation(){
         clearInterval(intervalId);
         intervalId = null;
     }
-    ShowRect(x2,y2, "white");
+    ShowRect(x_point,y_point, "white");
     ShowPoisonRect();
 }
 init();
